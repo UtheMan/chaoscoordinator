@@ -11,6 +11,6 @@ COPY cmd/ .
 RUN go build chaos.go
 
 # FROM alpine:3.9
-CMD ["./chaos"]
+CMD ["./chaos;"]
 # COPY --from=builder /chaos .
  

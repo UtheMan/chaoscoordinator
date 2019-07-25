@@ -6,3 +6,10 @@ spec:
   containers:
   - name: chaoscoordinator
     image: utheman/chaoscoordinator
+    env:
+      - name: AZURE_SUBSCRIPTION_ID
+        valueFrom:
+          secretKeyRef:
+            name: azure-subscription-id
+            key: subscriptionId
+              
