@@ -24,7 +24,6 @@ func NewCommand() *cobra.Command {
 func Run() error {
 	return NewCommand().Execute()
 }
-
 func main() {
 	if err := Run(); err != nil {
 		os.Exit(1)
