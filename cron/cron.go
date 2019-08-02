@@ -2,6 +2,8 @@ package main
 
 import (
 	"flag"
+	"k8s.io/api/batch/v1beta1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"os"
@@ -25,15 +27,33 @@ func main() {
 		panic(err.Error())
 	}
 
-	// create the clientset
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		panic(err.Error())
 	}
-	pods, err := clientset.BatchV2alpha1().CronJobs("").List(metav1.ListOptions{})
+
+
 	//create test cron job
-	//cronJob := clientset.BatchV1beta1().CronJobs().Create()
-	println(pods)
+	testCronJob := &v1beta1.CronJob{
+		TypeMeta:   metav1.TypeMeta{"CronJob", "batch/v1beta1"},
+		ObjectMeta: metav1.ObjectMeta{},
+		Spec:       v1beta1.CronJobSpec{},
+		Status:     v1beta1.CronJobStatus{},
+	}
+	testCronJob.TypeMeta.APIVersion = "batch/v1beta1"
+	testCronJob.TypeMeta.Kind = "CronJob"
+	testCronJob.ObjectMeta.Name = "test"
+	testCronJob.Spec.Schedule = "*/1 * * * *"
+	
+	testChaosContainer :=  v1.Container{}
+	testChaosContainer.Name = "test"
+	testChaosContainer.Image = "utheman/utheman_chaoscoordinator:599f0ea-dirty"
+	testChaosContainer.Args = [] string {"./chaos", "vm", "kill", "-m random", "-r controlplane", "-"}
+	testCronJob.Spec.JobTemplate.Spec.Template.Spec.RestartPolicy = v1.RestartPolicyOnFailure
+	testCronJob.Spec.JobTemplate.Spec.Template.Spec.Containers = append(testCronJob.Spec.JobTemplate.Spec.Template.Spec.Containers, testChaosContainer)
+
+	cronJob, _ := clientset.BatchV1beta1().CronJobs("default").Create(testCronJob)
+	println(cronJob)
 }
 
 func homeDir() string {
