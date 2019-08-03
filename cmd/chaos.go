@@ -3,9 +3,9 @@ package main
 import (
 	"os"
 
-	"github.com/UtheMan/chaosCoordinator/cmd/loadbalancer"
-	"github.com/UtheMan/chaosCoordinator/cmd/vm"
 	"github.com/spf13/cobra"
+	"github.com/utheman/chaoscoordinator/cmd/loadbalancer"
+	"github.com/utheman/chaoscoordinator/cmd/vm"
 )
 
 func NewCommand() *cobra.Command {

@@ -2,8 +2,8 @@
 package loadbalancer
 
 import (
-	"github.com/UtheMan/chaosCoordinator/cmd/loadbalancer/kill"
 	"github.com/spf13/cobra"
+	"github.com/utheman/chaoscoordinator/cmd/loadbalancer/kill"
 )
 
 var Scope string
