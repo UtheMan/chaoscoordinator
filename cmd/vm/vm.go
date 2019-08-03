@@ -2,8 +2,8 @@
 package vm
 
 import (
-	"github.com/UtheMan/chaosCoordinator/cmd/vm/kill"
 	"github.com/spf13/cobra"
+	"github.com/utheman/chaoscoordinator/cmd/vm/kill"
 )
 
 // NewCommand returns a new cobra.Command for vm targeting.

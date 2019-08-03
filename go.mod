@@ -8,7 +8,6 @@ require (
 	github.com/Azure/go-autorest/autorest/azure/auth v0.1.0
 	github.com/Azure/go-autorest/autorest/to v0.2.0 // indirect
 	github.com/Azure/go-autorest/autorest/validation v0.1.0 // indirect
-	github.com/UtheMan/chaosCoordinator v0.0.0-20190725022756-2cadc0f40deb
 	github.com/gogo/protobuf v1.2.2-0.20190723190241-65acae22fc9d // indirect
 	github.com/google/go-cmp v0.3.0 // indirect
 	github.com/googleapis/gnostic v0.3.0 // indirect
