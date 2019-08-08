@@ -2,6 +2,7 @@ package internal
 
 import (
 	"errors"
+	"k8s.io/api/batch/v1beta1"
 	"net/http"
 	"strings"
 )
@@ -20,6 +21,15 @@ type ChaosCronJob struct {
 
 type ChaosCronJobRequest struct {
 	*ChaosCronJob
+}
+
+type ChaosCronJobResponse struct {
+	ChaosCronJob *v1beta1.CronJob
+}
+
+func (c ChaosCronJobResponse) Render(w http.ResponseWriter, r *http.Request) error {
+	//Preprocess the response before marshalling?
+	return nil
 }
 
 func (c *ChaosCronJobRequest) Bind(r *http.Request) error {

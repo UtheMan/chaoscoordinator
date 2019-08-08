@@ -27,14 +27,29 @@ func (s *CronJobService) CreateCronJob(w http.ResponseWriter, r *http.Request) {
 	render.Status(r, http.StatusCreated)
 }
 
+func (s *CronJobService) DeleteCronJob(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("delete"))
+}
+
+func (s *CronJobService) GetCronJob(w http.ResponseWriter, r *http.Request) {
+	var cronJob = &v1beta1.CronJob{}
+	cronJob, err := fetchCronJob("test", s.ClientSet)
+	if err != nil {
+		render.Render(w, r, InvalidRequest(err))
+		return
+	}
+	if err := render.Render(w, r, NewCronJobResponse(cronJob)); err != nil {
+		render.Render(w, r, InvalidRender(err))
+		return
+	}
+}
+
 func deployCronJob(job *internal.ChaosCronJob, clientset *kubernetes.Clientset) error {
 	testCronJob := &v1beta1.CronJob{
-		//TypeMeta:   metav1.TypeMeta{},
 		ObjectMeta: metav1.ObjectMeta{},
 		Spec:       v1beta1.CronJobSpec{},
 		Status:     v1beta1.CronJobStatus{},
 	}
-	//testCronJob.TypeMeta.Kind = "CronJob"
 	testCronJob.ObjectMeta.Name = job.Name
 	testCronJob.Spec.Schedule = job.Schedule
 	testChaosContainer := v1.Container{
@@ -44,19 +59,18 @@ func deployCronJob(job *internal.ChaosCronJob, clientset *kubernetes.Clientset) 
 	}
 	testCronJob.Spec.JobTemplate.Spec.Template.Spec.RestartPolicy = v1.RestartPolicyOnFailure
 	testCronJob.Spec.JobTemplate.Spec.Template.Spec.Containers = append(testCronJob.Spec.JobTemplate.Spec.Template.Spec.Containers, testChaosContainer)
-	//check the clientset if properly connected (somewhere)
 	_, err := clientset.BatchV1beta1().CronJobs("default").Create(testCronJob)
 	if err != nil {
 		return err
 	}
-	//return url to resource created
 	return nil
 }
 
-func (s *CronJobService) DeleteCronJob(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("delete"))
+func NewCronJobResponse(job *v1beta1.CronJob) *internal.ChaosCronJobResponse {
+	response := &internal.ChaosCronJobResponse{ChaosCronJob: job}
+	return response
 }
 
-func (s *CronJobService) GetCronJob(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("get"))
+func fetchCronJob(name string, clientset *kubernetes.Clientset) (*v1beta1.CronJob, error) {
+	return clientset.BatchV1beta1().CronJobs("default").Get(name, metav1.GetOptions{})
 }

@@ -22,6 +22,15 @@ func InvalidRequest(e error) render.Renderer {
 	}
 }
 
+func InvalidRender(err error) render.Renderer {
+	return &InvalidRequestResponse{
+		Err:            err,
+		HTTPStatusCode: 422,
+		StatusText:     "Error rendering response.",
+		ErrorText:      err.Error(),
+	}
+}
+
 func (e *InvalidRequestResponse) Render(w http.ResponseWriter, r *http.Request) error {
 	render.Status(r, e.HTTPStatusCode)
 	return nil
