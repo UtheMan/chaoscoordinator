@@ -28,7 +28,8 @@ func (s *CronJobService) CreateCronJob(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *CronJobService) DeleteCronJob(w http.ResponseWriter, r *http.Request) {
-	err := s.ClientSet.BatchV1beta1().CronJobs("default").Delete("test", &metav1.DeleteOptions{})
+	name := r.FormValue("name")
+	err := s.ClientSet.BatchV1beta1().CronJobs("default").Delete(name, &metav1.DeleteOptions{})
 	if err != nil {
 		render.Render(w, r, InvalidRequest(err))
 		return
@@ -38,7 +39,8 @@ func (s *CronJobService) DeleteCronJob(w http.ResponseWriter, r *http.Request) {
 
 func (s *CronJobService) GetCronJob(w http.ResponseWriter, r *http.Request) {
 	var cronJob = &v1beta1.CronJob{}
-	cronJob, err := s.ClientSet.BatchV1beta1().CronJobs("default").Get("test", metav1.GetOptions{})
+	name := r.FormValue("name")
+	cronJob, err := s.ClientSet.BatchV1beta1().CronJobs("default").Get(name, metav1.GetOptions{})
 	if err != nil {
 		render.Render(w, r, InvalidRequest(err))
 		return
