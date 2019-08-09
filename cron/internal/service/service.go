@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"github.com/go-chi/render"
 	"github.com/utheman/chaoscoordinator/cron/internal"
 	"k8s.io/api/batch/v1beta1"
@@ -29,9 +30,12 @@ func (s *CronJobService) CreateCronJob(w http.ResponseWriter, r *http.Request) {
 
 func (s *CronJobService) DeleteCronJob(w http.ResponseWriter, r *http.Request) {
 	name := r.FormValue("name")
+	if s.checkIfNamePresent(name, w, r) {
+		return
+	}
 	err := s.ClientSet.BatchV1beta1().CronJobs("default").Delete(name, &metav1.DeleteOptions{})
 	if err != nil {
-		render.Render(w, r, InvalidRequest(err))
+		render.Render(w, r, ContentNotFoundRequest(err))
 		return
 	}
 	render.Status(r, http.StatusOK)
@@ -40,15 +44,27 @@ func (s *CronJobService) DeleteCronJob(w http.ResponseWriter, r *http.Request) {
 func (s *CronJobService) GetCronJob(w http.ResponseWriter, r *http.Request) {
 	var cronJob = &v1beta1.CronJob{}
 	name := r.FormValue("name")
+	if s.checkIfNamePresent(name, w, r) {
+		return
+	}
 	cronJob, err := s.ClientSet.BatchV1beta1().CronJobs("default").Get(name, metav1.GetOptions{})
 	if err != nil {
-		render.Render(w, r, InvalidRequest(err))
+		render.Render(w, r, ContentNotFoundRequest(err))
 		return
 	}
 	if err := render.Render(w, r, NewCronJobResponse(cronJob)); err != nil {
 		render.Render(w, r, InvalidRender(err))
 		return
 	}
+}
+
+func (s *CronJobService) checkIfNamePresent(name string, w http.ResponseWriter, r *http.Request) bool {
+	if name == "" {
+		err := errors.New("name value cannot be empty")
+		render.Render(w, r, InvalidRequest(err))
+		return true
+	}
+	return false
 }
 
 func deployCronJob(job *internal.ChaosCronJob, clientset *kubernetes.Clientset) error {
