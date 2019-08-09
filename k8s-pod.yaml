@@ -3,10 +3,20 @@ kind: Pod
 metadata:
   name: chaoscoordinator
 spec:
+  volumes:
+    - name: azure-auth-volume
+      secret:
+        secretName: azure-auth
   containers:
   - name: chaoscoordinator
     image: utheman/chaoscoordinator
+    volumeMounts:
+      - name: azure-auth-volume
+        readOnly: true
+        mountPath: "/etc/azure-auth-volume"
     env:
+      - name: AZURE_AUTH_LOCATION
+        value: "/etc/azure-auth-volume/creds"
       - name: AZURE_SUBSCRIPTION_ID
         valueFrom:
           secretKeyRef:

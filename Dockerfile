@@ -9,4 +9,4 @@ RUN make build
 FROM alpine:latest
 WORKDIR /
 COPY --from=builder /chaoscoordinator/bin/chaos /chaos
-CMD ["./chaos",  "vm", "kill"]
+#CMD ["./chaos",  "vm", "kill"]

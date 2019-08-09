@@ -28,12 +28,17 @@ func (s *CronJobService) CreateCronJob(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *CronJobService) DeleteCronJob(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("delete"))
+	err := s.ClientSet.BatchV1beta1().CronJobs("default").Delete("test", &metav1.DeleteOptions{})
+	if err != nil {
+		render.Render(w, r, InvalidRequest(err))
+		return
+	}
+	render.Status(r, http.StatusOK)
 }
 
 func (s *CronJobService) GetCronJob(w http.ResponseWriter, r *http.Request) {
 	var cronJob = &v1beta1.CronJob{}
-	cronJob, err := fetchCronJob("test", s.ClientSet)
+	cronJob, err := s.ClientSet.BatchV1beta1().CronJobs("default").Get("test", metav1.GetOptions{})
 	if err != nil {
 		render.Render(w, r, InvalidRequest(err))
 		return
@@ -54,7 +59,7 @@ func deployCronJob(job *internal.ChaosCronJob, clientset *kubernetes.Clientset) 
 	testCronJob.Spec.Schedule = job.Schedule
 	testChaosContainer := v1.Container{
 		Name:  job.Name,
-		Image: "utheman/utheman_chaoscoordinator:48ecd23-dirty",
+		Image: "utheman/utheman_chaoscoordinator:175adfc-dirty",
 		Args:  job.Cmd,
 	}
 	testCronJob.Spec.JobTemplate.Spec.Template.Spec.RestartPolicy = v1.RestartPolicyOnFailure
@@ -69,8 +74,4 @@ func deployCronJob(job *internal.ChaosCronJob, clientset *kubernetes.Clientset) 
 func NewCronJobResponse(job *v1beta1.CronJob) *internal.ChaosCronJobResponse {
 	response := &internal.ChaosCronJobResponse{ChaosCronJob: job}
 	return response
-}
-
-func fetchCronJob(name string, clientset *kubernetes.Clientset) (*v1beta1.CronJob, error) {
-	return clientset.BatchV1beta1().CronJobs("default").Get(name, metav1.GetOptions{})
 }
