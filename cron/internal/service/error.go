@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"github.com/go-chi/render"
 	"net/http"
 )
@@ -56,4 +57,9 @@ func (e *InvalidRequestResponse) Render(w http.ResponseWriter, r *http.Request) 
 func (e *ContentNotFoundResponse) Render(w http.ResponseWriter, r *http.Request) error {
 	render.Status(r, e.HTTPStatusCode)
 	return nil
+}
+
+func (s *CronJobService) ParamsNotPresent(w http.ResponseWriter, r *http.Request) {
+	err := errors.New("name or namespace must be specified")
+	render.Render(w, r, InvalidRequest(err))
 }

@@ -27,7 +27,16 @@ type ChaosCronJobResponse struct {
 	ChaosCronJob *v1beta1.CronJob
 }
 
+type ChaosCronJobListResponse struct {
+	CronJobList *v1beta1.CronJobList
+}
+
 func (c ChaosCronJobResponse) Render(w http.ResponseWriter, r *http.Request) error {
+	//Preprocess the response before marshalling?
+	return nil
+}
+
+func (c ChaosCronJobListResponse) Render(w http.ResponseWriter, r *http.Request) error {
 	//Preprocess the response before marshalling?
 	return nil
 }

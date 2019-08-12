@@ -1,7 +1,6 @@
 package service
 
 import (
-	"errors"
 	"github.com/go-chi/render"
 	"github.com/utheman/chaoscoordinator/cron/internal"
 	"k8s.io/api/batch/v1beta1"
@@ -30,8 +29,8 @@ func (s *CronJobService) CreateCronJob(w http.ResponseWriter, r *http.Request) {
 
 func (s *CronJobService) DeleteCronJob(w http.ResponseWriter, r *http.Request) {
 	name := r.FormValue("name")
-	if s.checkIfNamePresent(name, w, r) {
-		return
+	if name == "" {
+		s.ParamsNotPresent(w, r)
 	}
 	err := s.ClientSet.BatchV1beta1().CronJobs("default").Delete(name, &metav1.DeleteOptions{})
 	if err != nil {
@@ -42,11 +41,18 @@ func (s *CronJobService) DeleteCronJob(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *CronJobService) GetCronJob(w http.ResponseWriter, r *http.Request) {
-	var cronJob = &v1beta1.CronJob{}
 	name := r.FormValue("name")
-	if s.checkIfNamePresent(name, w, r) {
-		return
+	namespace := r.FormValue("namespace")
+	if name != "" {
+		s.getSingleCronJob(&v1beta1.CronJob{}, name, w, r)
+	} else if namespace != "" {
+		s.getCronJobList(&v1beta1.CronJobList{}, namespace, w, r)
+	} else {
+		s.ParamsNotPresent(w, r)
 	}
+}
+
+func (s *CronJobService) getSingleCronJob(cronJob *v1beta1.CronJob, name string, w http.ResponseWriter, r *http.Request) {
 	cronJob, err := s.ClientSet.BatchV1beta1().CronJobs("default").Get(name, metav1.GetOptions{})
 	if err != nil {
 		render.Render(w, r, ContentNotFoundRequest(err))
@@ -58,31 +64,34 @@ func (s *CronJobService) GetCronJob(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *CronJobService) checkIfNamePresent(name string, w http.ResponseWriter, r *http.Request) bool {
-	if name == "" {
-		err := errors.New("name value cannot be empty")
-		render.Render(w, r, InvalidRequest(err))
-		return true
+func (s *CronJobService) getCronJobList(list *v1beta1.CronJobList, namespace string, w http.ResponseWriter, r *http.Request) {
+	list, err := s.ClientSet.BatchV1beta1().CronJobs(namespace).List(metav1.ListOptions{})
+	if err != nil {
+		render.Render(w, r, ContentNotFoundRequest(err))
+		return
 	}
-	return false
+	if err := render.Render(w, r, NewCronJobListResponse(list)); err != nil {
+		render.Render(w, r, InvalidRender(err))
+		return
+	}
 }
 
 func deployCronJob(job *internal.ChaosCronJob, clientset *kubernetes.Clientset) error {
-	testCronJob := &v1beta1.CronJob{
+	cronJob := &v1beta1.CronJob{
 		ObjectMeta: metav1.ObjectMeta{},
 		Spec:       v1beta1.CronJobSpec{},
 		Status:     v1beta1.CronJobStatus{},
 	}
-	testCronJob.ObjectMeta.Name = job.Name
-	testCronJob.Spec.Schedule = job.Schedule
+	cronJob.ObjectMeta.Name = job.Name
+	cronJob.Spec.Schedule = job.Schedule
 	testChaosContainer := v1.Container{
 		Name:  job.Name,
 		Image: "utheman/utheman_chaoscoordinator:175adfc-dirty",
 		Args:  job.Cmd,
 	}
-	testCronJob.Spec.JobTemplate.Spec.Template.Spec.RestartPolicy = v1.RestartPolicyOnFailure
-	testCronJob.Spec.JobTemplate.Spec.Template.Spec.Containers = append(testCronJob.Spec.JobTemplate.Spec.Template.Spec.Containers, testChaosContainer)
-	_, err := clientset.BatchV1beta1().CronJobs("default").Create(testCronJob)
+	cronJob.Spec.JobTemplate.Spec.Template.Spec.RestartPolicy = v1.RestartPolicyOnFailure
+	cronJob.Spec.JobTemplate.Spec.Template.Spec.Containers = append(cronJob.Spec.JobTemplate.Spec.Template.Spec.Containers, testChaosContainer)
+	_, err := clientset.BatchV1beta1().CronJobs("default").Create(cronJob)
 	if err != nil {
 		return err
 	}
@@ -91,5 +100,10 @@ func deployCronJob(job *internal.ChaosCronJob, clientset *kubernetes.Clientset) 
 
 func NewCronJobResponse(job *v1beta1.CronJob) *internal.ChaosCronJobResponse {
 	response := &internal.ChaosCronJobResponse{ChaosCronJob: job}
+	return response
+}
+
+func NewCronJobListResponse(list *v1beta1.CronJobList) *internal.ChaosCronJobListResponse {
+	response := &internal.ChaosCronJobListResponse{CronJobList: list}
 	return response
 }
