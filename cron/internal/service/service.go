@@ -84,12 +84,52 @@ func deployCronJob(job *internal.ChaosCronJob, clientset *kubernetes.Clientset) 
 	}
 	cronJob.ObjectMeta.Name = job.Name
 	cronJob.Spec.Schedule = job.Schedule
+	cronJob.Spec.FailedJobsHistoryLimit = new(int32)
+	cronJob.Spec.SuccessfulJobsHistoryLimit = new(int32)
 	testChaosContainer := v1.Container{
-		Name:  job.Name,
-		Image: "utheman/utheman_chaoscoordinator:175adfc-dirty",
-		Args:  job.Cmd,
+		Name:    job.Name,
+		Image:   "utheman/utheman_chaoscoordinator:4124186-dirty",
+		Command: job.Cmd,
+		Args:    job.Args,
 	}
 	cronJob.Spec.JobTemplate.Spec.Template.Spec.RestartPolicy = v1.RestartPolicyOnFailure
+	azureCreds := v1.KeyToPath{
+		Key:  "creds",
+		Path: "creds",
+	}
+	secretVolume := v1.Volume{
+		Name: "azure-auth-volume",
+		VolumeSource: v1.VolumeSource{
+			Secret: &v1.SecretVolumeSource{
+				SecretName: "azure-auth",
+				Items:      []v1.KeyToPath{azureCreds},
+			},
+		},
+	}
+	volumeMount := v1.VolumeMount{
+		Name:      "azure-auth-volume",
+		ReadOnly:  true,
+		MountPath: "/etc/azure-auth-volume",
+	}
+	azureAuthLocation := v1.EnvVar{
+		Name:  "AZURE_AUTH_LOCATION",
+		Value: "/etc/azure-auth-volume/creds",
+	}
+	azureSubscriptionId := v1.EnvVar{
+		Name: "SUBSCRIPTION_ID",
+		ValueFrom: &v1.EnvVarSource{
+			SecretKeyRef: &v1.SecretKeySelector{
+				LocalObjectReference: v1.LocalObjectReference{
+					Name: "azure-subscription-id",
+				},
+				Key: "subscriptionId",
+			},
+		},
+	}
+	testChaosContainer.Env = append(testChaosContainer.Env, azureAuthLocation)
+	testChaosContainer.Env = append(testChaosContainer.Env, azureSubscriptionId)
+	testChaosContainer.VolumeMounts = append(testChaosContainer.VolumeMounts, volumeMount)
+	cronJob.Spec.JobTemplate.Spec.Template.Spec.Volumes = append(cronJob.Spec.JobTemplate.Spec.Template.Spec.Volumes, secretVolume)
 	cronJob.Spec.JobTemplate.Spec.Template.Spec.Containers = append(cronJob.Spec.JobTemplate.Spec.Template.Spec.Containers, testChaosContainer)
 	_, err := clientset.BatchV1beta1().CronJobs("default").Create(cronJob)
 	if err != nil {

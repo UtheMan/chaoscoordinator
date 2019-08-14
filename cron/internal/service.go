@@ -17,6 +17,7 @@ type ChaosCronJob struct {
 	Schedule string   `json:"schedule"`
 	Name     string   `json:"name"`
 	Cmd      []string `json:"command"`
+	Args     []string `json:"args"`
 }
 
 type ChaosCronJobRequest struct {

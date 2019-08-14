@@ -17,7 +17,10 @@ type Flags struct {
 }
 
 func Kill(subID string, flags Flags) error {
-	c, _ := NewVMsClient(subID)
+	c, err := NewVMsClient(subID)
+	if err != nil {
+		return err
+	}
 	vmsList, err := c.list(context.TODO(), flags.ResourceGroup, flags.ResourceName)
 	if err != nil {
 		return err
