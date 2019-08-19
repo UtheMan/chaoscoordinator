@@ -1,4 +1,4 @@
-package vm
+package azure
 
 import (
 	"encoding/json"
@@ -31,7 +31,7 @@ type authContext struct {
 	AzureTenantID     string `json:"tenantId"`
 }
 
-func injectAuthorizer() (autorest.Authorizer, error) {
+func InjectAuthorizer() (autorest.Authorizer, error) {
 	config, err := provideConfiguration()
 	if err != nil {
 		return nil, err

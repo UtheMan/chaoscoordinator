@@ -27,9 +27,6 @@ func Kill(subID string, flags Flags) error {
 	}
 	instanceToReboot := selectInstanceToReboot(vmsList, flags)
 	_, err = c.Restart(context.TODO(), flags.ResourceGroup, flags.ResourceName, instanceToReboot)
-	if err != nil {
-		return err
-	}
 	return err
 }
 

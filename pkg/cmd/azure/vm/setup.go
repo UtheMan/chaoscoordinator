@@ -2,6 +2,7 @@ package vm
 
 import (
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/compute/mgmt/compute"
+	"github.com/utheman/chaoscoordinator/pkg/cmd/azure"
 )
 
 const userAgent string = "genesys"
@@ -19,8 +20,7 @@ func NewVMsClient(subId string) (*vmssClient, error) {
 }
 
 func newScaleSetVMsClient(subID string) (compute.VirtualMachineScaleSetVMsClient, error) {
-	a, err := injectAuthorizer()
-
+	a, err := azure.InjectAuthorizer()
 	if err != nil {
 		return compute.VirtualMachineScaleSetVMsClient{}, err
 	}

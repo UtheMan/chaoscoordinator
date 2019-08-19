@@ -6,7 +6,7 @@ RUN make modules
 RUN make build
 
 #second stage
-FROM gcr.io/distroless/base
+FROM alpine:latest
 WORKDIR /
 COPY --from=builder /chaoscoordinator/bin/chaos /chaos
-#CMD ["./chaos",  "vm", "kill"]
+CMD ["./chaos",  "vm", "kill"]

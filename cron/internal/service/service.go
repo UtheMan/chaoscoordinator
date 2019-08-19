@@ -1,8 +1,8 @@
 package service
 
 import (
+	"chaosmanager/internal"
 	"github.com/go-chi/render"
-	"github.com/utheman/chaoscoordinator/cron/internal"
 	"k8s.io/api/batch/v1beta1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -26,6 +26,8 @@ func (s *CronJobService) CreateCronJob(w http.ResponseWriter, r *http.Request) {
 	}
 	render.Status(r, http.StatusCreated)
 }
+
+//expose chaos ctrl on kubernetes to launch from external ip
 
 func (s *CronJobService) DeleteCronJob(w http.ResponseWriter, r *http.Request) {
 	name := r.FormValue("name")
@@ -77,45 +79,33 @@ func (s *CronJobService) getCronJobList(list *v1beta1.CronJobList, namespace str
 }
 
 func deployCronJob(job *internal.ChaosCronJob, clientset *kubernetes.Clientset) error {
-	cronJob := &v1beta1.CronJob{
-		ObjectMeta: metav1.ObjectMeta{},
-		Spec:       v1beta1.CronJobSpec{},
-		Status:     v1beta1.CronJobStatus{},
+	cronJob := setupCronJob(job)
+	_, err := clientset.BatchV1beta1().CronJobs("default").Create(cronJob)
+	if err != nil {
+		return err
 	}
-	cronJob.ObjectMeta.Name = job.Name
-	cronJob.Spec.Schedule = job.Schedule
-	cronJob.Spec.FailedJobsHistoryLimit = new(int32)
-	cronJob.Spec.SuccessfulJobsHistoryLimit = new(int32)
-	testChaosContainer := v1.Container{
+	return nil
+}
+
+func setupCronJob(job *internal.ChaosCronJob) *v1beta1.CronJob {
+	cronJob := initCronJob(job)
+	chaosContainer := setupContainer(job)
+	cronJob.Spec.JobTemplate.Spec.Template.Spec.Containers = append(cronJob.Spec.JobTemplate.Spec.Template.Spec.Containers, chaosContainer)
+	return cronJob
+}
+
+func setupContainer(job *internal.ChaosCronJob) v1.Container {
+	container := v1.Container{
 		Name:    job.Name,
 		Image:   "utheman/utheman_chaoscoordinator:4124186-dirty",
 		Command: job.Cmd,
 		Args:    job.Args,
 	}
-	cronJob.Spec.JobTemplate.Spec.Template.Spec.RestartPolicy = v1.RestartPolicyOnFailure
-	azureCreds := v1.KeyToPath{
-		Key:  "creds",
-		Path: "creds",
-	}
-	secretVolume := v1.Volume{
-		Name: "azure-auth-volume",
-		VolumeSource: v1.VolumeSource{
-			Secret: &v1.SecretVolumeSource{
-				SecretName: "azure-auth",
-				Items:      []v1.KeyToPath{azureCreds},
-			},
-		},
-	}
-	volumeMount := v1.VolumeMount{
-		Name:      "azure-auth-volume",
-		ReadOnly:  true,
-		MountPath: "/etc/azure-auth-volume",
-	}
-	azureAuthLocation := v1.EnvVar{
+	container.Env = append(container.Env, v1.EnvVar{
 		Name:  "AZURE_AUTH_LOCATION",
 		Value: "/etc/azure-auth-volume/creds",
-	}
-	azureSubscriptionId := v1.EnvVar{
+	})
+	container.Env = append(container.Env, v1.EnvVar{
 		Name: "SUBSCRIPTION_ID",
 		ValueFrom: &v1.EnvVarSource{
 			SecretKeyRef: &v1.SecretKeySelector{
@@ -125,17 +115,45 @@ func deployCronJob(job *internal.ChaosCronJob, clientset *kubernetes.Clientset) 
 				Key: "subscriptionId",
 			},
 		},
+	})
+	container.VolumeMounts = append(container.VolumeMounts, v1.VolumeMount{
+		Name:      "azure-auth-volume",
+		ReadOnly:  true,
+		MountPath: "/etc/azure-auth-volume",
+	})
+	return container
+}
+
+func initCronJob(job *internal.ChaosCronJob) *v1beta1.CronJob {
+	cronJob := &v1beta1.CronJob{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: job.Name,
+		},
+		Spec: v1beta1.CronJobSpec{
+			Schedule:                   job.Schedule,
+			FailedJobsHistoryLimit:     new(int32),
+			SuccessfulJobsHistoryLimit: new(int32),
+		},
+		Status: v1beta1.CronJobStatus{},
 	}
-	testChaosContainer.Env = append(testChaosContainer.Env, azureAuthLocation)
-	testChaosContainer.Env = append(testChaosContainer.Env, azureSubscriptionId)
-	testChaosContainer.VolumeMounts = append(testChaosContainer.VolumeMounts, volumeMount)
-	cronJob.Spec.JobTemplate.Spec.Template.Spec.Volumes = append(cronJob.Spec.JobTemplate.Spec.Template.Spec.Volumes, secretVolume)
-	cronJob.Spec.JobTemplate.Spec.Template.Spec.Containers = append(cronJob.Spec.JobTemplate.Spec.Template.Spec.Containers, testChaosContainer)
-	_, err := clientset.BatchV1beta1().CronJobs("default").Create(cronJob)
-	if err != nil {
-		return err
-	}
-	return nil
+	cronJob.Spec.JobTemplate.Spec.Template.Spec.RestartPolicy = v1.RestartPolicyOnFailure
+	mountCronJobAuthVolumes(cronJob)
+	return cronJob
+}
+
+func mountCronJobAuthVolumes(job *v1beta1.CronJob) {
+	job.Spec.JobTemplate.Spec.Template.Spec.Volumes = append(job.Spec.JobTemplate.Spec.Template.Spec.Volumes, v1.Volume{
+		Name: "azure-auth-volume",
+		VolumeSource: v1.VolumeSource{
+			Secret: &v1.SecretVolumeSource{
+				SecretName: "azure-auth",
+				Items: []v1.KeyToPath{{
+					Key:  "creds",
+					Path: "creds",
+				}},
+			},
+		},
+	})
 }
 
 func NewCronJobResponse(job *v1beta1.CronJob) *internal.ChaosCronJobResponse {

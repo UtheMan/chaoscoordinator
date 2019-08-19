@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chaoscoordinatorservice
+spec:
+  selector:
+    matchLabels:
+      run: chaoscoordinatorservice
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        run: chaoscoordinatorservice
+    spec:
+      containers:
+        - name: chaoscoordinatorservice
+          image: utheman/utheman_chaoscoordinatorservice:ab674ff-dirty
+          command: [./bin/chaoscoordinatorservice]
+          args: ["--kubeconfig", "./genesys-config-k8s-genesys"]
+          ports:
+          - containerPort: 3000

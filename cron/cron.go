@@ -1,8 +1,9 @@
 package main
 
 import (
+	"chaosmanager/internal/service"
 	"github.com/go-chi/chi"
-	"github.com/utheman/chaoscoordinator/cron/internal/service"
+
 	"net/http"
 )
 
