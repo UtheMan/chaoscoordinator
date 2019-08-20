@@ -5,6 +5,7 @@ go 1.12
 require (
 	contrib.go.opencensus.io/exporter/ocagent v0.4.12 // indirect
 	github.com/Azure/azure-sdk-for-go v31.2.0+incompatible
+	github.com/Azure/azure-storage-file-go v0.5.0 // indirect
 	github.com/Azure/go-autorest/autorest v0.7.0
 	github.com/Azure/go-autorest/autorest/azure/auth v0.1.0
 	github.com/Azure/go-autorest/autorest/to v0.2.0 // indirect
@@ -22,7 +23,6 @@ require (
 	github.com/spf13/cobra v0.0.5
 	golang.org/x/net v0.0.0-20190613194153-d28f0bde5980 // indirect
 	golang.org/x/oauth2 v0.0.0-20190402181905-9f3314589c9a // indirect
-	golang.org/x/sys v0.0.0-20190616124812-15dcb6c0061f // indirect
 	golang.org/x/text v0.3.2 // indirect
 	golang.org/x/time v0.0.0-20190308202827-9d24e82272b4 // indirect
 	google.golang.org/appengine v1.5.0 // indirect

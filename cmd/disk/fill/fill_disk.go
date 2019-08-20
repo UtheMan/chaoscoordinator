@@ -19,6 +19,6 @@ func NewCommand() *cobra.Command {
 		},
 	}
 	cmd.PersistentFlags().StringVarP(&cmdFlags.Time, "time", "t", "", "Stress test duration")
-
+	cmd.PersistentFlags().IntVarP(&cmdFlags.FillPercentage, "fill percentage", "f", 0, "Disk fill percentage (0-100)")
 	return cmd
 }

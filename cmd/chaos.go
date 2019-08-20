@@ -1,6 +1,8 @@
 package main
 
 import (
+	"github.com/utheman/chaoscoordinator/cmd/cpu"
+	"github.com/utheman/chaoscoordinator/cmd/disk"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -18,6 +20,8 @@ func NewCommand() *cobra.Command {
 	}
 	rootCmd.AddCommand(vm.NewCommand())
 	rootCmd.AddCommand(loadbalancer.NewCommand())
+	rootCmd.AddCommand(cpu.NewCommand())
+	rootCmd.AddCommand(disk.NewCommand())
 	return rootCmd
 }
 

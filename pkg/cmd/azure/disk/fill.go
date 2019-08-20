@@ -3,7 +3,8 @@ package disk
 import "errors"
 
 type Flags struct {
-	Time string
+	Time           string
+	FillPercentage int
 }
 
 func Fill(subID string, flags Flags) error {
