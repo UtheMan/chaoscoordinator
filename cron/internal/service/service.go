@@ -25,6 +25,7 @@ func (s *CronJobService) CreateCronJob(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	render.Status(r, http.StatusCreated)
+	render.Render(w, r, ContentCreatedRequest())
 }
 
 //expose chaos ctrl on kubernetes to launch from external ip
@@ -39,7 +40,6 @@ func (s *CronJobService) DeleteCronJob(w http.ResponseWriter, r *http.Request) {
 		render.Render(w, r, ContentNotFoundRequest(err))
 		return
 	}
-	render.Status(r, http.StatusOK)
 }
 
 func (s *CronJobService) GetCronJob(w http.ResponseWriter, r *http.Request) {
