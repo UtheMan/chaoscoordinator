@@ -23,7 +23,7 @@ func NewCommand() *cobra.Command {
 	cmd.PersistentFlags().StringVarP(&cmdFlags.Scope, "scope", "s", "", "Scope for the command")
 	cmd.PersistentFlags().StringVarP(&cmdFlags.Mode, "mode", "m", "", "Chaos mode")
 	cmd.PersistentFlags().StringVarP(&cmdFlags.ResourceName, "name", "n", "", "resource name")
-	cmd.PersistentFlags().StringVarP(&cmdFlags.ResourceGroup, "resourcegroup", "r", "", "resource group name")
+	cmd.PersistentFlags().StringVarP(&cmdFlags.ResourceGroup, "resource group", "r", "", "resource group name")
 
 	return cmd
 }

@@ -7,16 +7,16 @@ import (
 
 const userAgent string = "genesys"
 
-type vmssClient struct {
+type VmssClient struct {
 	compute.VirtualMachineScaleSetVMsClient
 }
 
-func NewVMsClient(subId string) (*vmssClient, error) {
+func NewVMsClient(subId string) (*VmssClient, error) {
 	vmClient, err := newScaleSetVMsClient(subId)
 	if err != nil {
 		return nil, err
 	}
-	return &vmssClient{vmClient}, nil
+	return &VmssClient{vmClient}, nil
 }
 
 func newScaleSetVMsClient(subID string) (compute.VirtualMachineScaleSetVMsClient, error) {

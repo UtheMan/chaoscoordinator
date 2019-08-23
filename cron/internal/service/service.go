@@ -27,8 +27,6 @@ func (s *CronJobService) CreateCronJob(w http.ResponseWriter, r *http.Request) {
 	render.Status(r, http.StatusCreated)
 }
 
-//expose chaos ctrl on kubernetes to launch from external ip
-
 func (s *CronJobService) DeleteCronJob(w http.ResponseWriter, r *http.Request) {
 	name := r.FormValue("name")
 	if name == "" {
@@ -97,7 +95,7 @@ func setupCronJob(job *internal.ChaosCronJob) *v1beta1.CronJob {
 func setupContainer(job *internal.ChaosCronJob) v1.Container {
 	container := v1.Container{
 		Name:    job.Name,
-		Image:   "utheman/utheman_chaoscoordinator:4124186-dirty",
+		Image:   "utheman/utheman_chaoscoordinator:468c33c-dirty",
 		Command: job.Cmd,
 		Args:    job.Args,
 	}

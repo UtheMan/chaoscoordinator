@@ -3,7 +3,7 @@ package stress
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/utheman/chaoscoordinator/pkg/cmd/azure/cpu"
+	"github.com/utheman/chaoscoordinator/pkg/cmd/azure/hardware/cpu"
 	"os"
 )
 

@@ -21,7 +21,7 @@ spec:
       secretName: azure-auth
   containers:
   - name: chaoscoordinator
-    image: utheman/utheman_chaoscoordinator:4124186-dirty
+    image: utheman/utheman_chaoscoordinator:468c33c-dirty
     command: ["./chaos"]
     args: [ "vm", "kill", "-m", "random", "-r",  "chaoscoordinatorresourcegroup", "-n", "controlplane"]
     volumeMounts:
