@@ -12,46 +12,18 @@ import (
 type CmdRequest struct {
 	Duration      time.Duration
 	Timeout       time.Duration
+	Latency       int
 	Amount        string
 	ResourceGroup string
 	ScaleSet      string
 	Vm            compute.VirtualMachineScaleSet
 	CmdID         string
+	ScriptContent []byte
 	Cmd           []string
 	CmdParams     []compute.RunCommandInputParameter
 }
 
-type Flags struct {
-	Duration      int
-	TimeOut       int
-	Amount        string
-	ResourceGroup string
-	ScaleSetName  string
-	Filter        string
-}
-
-func NewCmdRequest(amount string, duration int, timeOut int, resourceGroup string, scaleSet string, cmd []string, cmdParams []compute.RunCommandInputParameter) *CmdRequest {
-	r := new(CmdRequest)
-	r.Duration = time.Duration(duration)
-	r.Timeout = time.Duration(timeOut)
-	r.Amount = amount
-	r.ResourceGroup = resourceGroup
-	r.ScaleSet = scaleSet
-	r.Cmd = cmd
-	r.CmdID = "RunShellScript"
-	r.CmdParams = cmdParams
-	return r
-}
-
-func LoadScript(path string) ([]byte, error) {
-	scriptContent, err := ioutil.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-	return scriptContent, nil
-}
-
-func RunVmCmd(cmdErrors chan error, results chan compute.RunCommandResult, client *vm.VmssClient, request *CmdRequest, vmId string) (chan error, chan compute.RunCommandResult) {
+func (request CmdRequest) RunVmCmd(cmdErrors chan error, results chan compute.RunCommandResult, client *vm.VmssClient, vmId string) (chan error, chan compute.RunCommandResult) {
 	future, err := client.RunCommand(context.TODO(), request.ResourceGroup, request.ScaleSet, vmId, compute.RunCommandInput{
 		CommandID:  &request.CmdID,
 		Script:     &request.Cmd,
@@ -71,6 +43,57 @@ func RunVmCmd(cmdErrors chan error, results chan compute.RunCommandResult, clien
 	return cmdErrors, results
 }
 
+type Flags struct {
+	Duration      int
+	Latency       int
+	TimeOut       int
+	Amount        string
+	ResourceGroup string
+	ScaleSetName  string
+	Filter        string
+}
+
+func NewCmdRequest(amount string, duration int, timeOut int, latency int, resourceGroup string, scaleSet string, scriptContent []byte) *CmdRequest {
+	r := new(CmdRequest)
+	r.Amount = amount
+	r.Duration = time.Duration(duration)
+	r.Timeout = time.Duration(timeOut)
+	r.Latency = latency
+	r.ResourceGroup = resourceGroup
+	r.ScaleSet = scaleSet
+	r.CmdID = "RunShellScript"
+	r.ScriptContent = scriptContent
+	return r
+}
+
+func LoadScript(path string) ([]byte, error) {
+	scriptContent, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	return scriptContent, nil
+}
+
+func ExecutePreparedCmd(client *vm.VmssClient, flags Flags, instanceId string, request *CmdRequest) error {
+	cmdErrors := make(chan error)
+	results := make(chan compute.RunCommandResult)
+	go request.RunVmCmd(cmdErrors, results, client, instanceId)
+	return HandleCmdResult(cmdErrors, results, flags)
+}
+
+func PrepareRequest(path string, flags Flags, client *vm.VmssClient) ([]compute.VirtualMachineScaleSetVM, *CmdRequest, error) {
+	vms, err := getEligibleVms(client, flags)
+	if err != nil {
+		return nil, nil, err
+	}
+	scriptContent, err := LoadScript(path)
+	if err != nil {
+		return nil, nil, err
+	}
+	cmdRequest := NewCmdRequest(flags.Amount, flags.Duration, flags.TimeOut, flags.Latency, flags.ResourceGroup, flags.ScaleSetName, scriptContent)
+	return vms, cmdRequest, nil
+}
+
 func HandleCmdResult(cmdErrors chan error, results chan compute.RunCommandResult, flags Flags) error {
 	select {
 	case err := <-cmdErrors:
@@ -82,4 +105,14 @@ func HandleCmdResult(cmdErrors chan error, results chan compute.RunCommandResult
 		err := errors.New("operation timed out")
 		return err
 	}
+}
+
+func getEligibleVms(client *vm.VmssClient, flags Flags) ([]compute.VirtualMachineScaleSetVM, error) {
+	vmsList, err := client.VirtualMachineScaleSetVMsClient.List(context.TODO(), flags.ResourceGroup, flags.ScaleSetName, flags.Filter, "", string(compute.InstanceView))
+	if err != nil {
+		return nil, err
+	}
+	vms := make([]compute.VirtualMachineScaleSetVM, 0, len(vmsList.Values()))
+	vms = append(vms, vmsList.Values()...)
+	return vms, nil
 }
