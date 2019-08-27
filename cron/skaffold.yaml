@@ -2,7 +2,7 @@ apiVersion: skaffold/v1beta12
 kind: Config
 build:
   tagPolicy:
-    gitCommit: {}
+    sha256: {}
   artifacts:
     - image: utheman/chaoscoordinatorservice
 deploy:

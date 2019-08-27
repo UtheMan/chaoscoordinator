@@ -52,6 +52,7 @@ func (s *CronJobService) GetCronJob(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+//We only check for specified name in default namespace because all chaos coordinator cron jobs are created in it
 func (s *CronJobService) getSingleCronJob(cronJob *v1beta1.CronJob, name string, w http.ResponseWriter, r *http.Request) {
 	cronJob, err := s.ClientSet.BatchV1beta1().CronJobs("default").Get(name, metav1.GetOptions{})
 	if err != nil {
@@ -95,7 +96,7 @@ func setupCronJob(job *internal.ChaosCronJob) *v1beta1.CronJob {
 func setupContainer(job *internal.ChaosCronJob) v1.Container {
 	container := v1.Container{
 		Name:    job.Name,
-		Image:   "utheman/utheman_chaoscoordinator:468c33c-dirty",
+		Image:   "utheman/utheman_chaoscoordinator:latest",
 		Command: job.Cmd,
 		Args:    job.Args,
 	}
