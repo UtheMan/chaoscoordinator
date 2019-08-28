@@ -39,7 +39,7 @@ func selectInstanceToReboot(setVMS []compute.VirtualMachineScaleSetVM, flags Fla
 	}
 }
 
-func (c *vmssClient) list(ctx context.Context, group, name string) ([]compute.VirtualMachineScaleSetVM, error) {
+func (c *VmssClient) list(ctx context.Context, group, name string) ([]compute.VirtualMachineScaleSetVM, error) {
 	result, err := c.VirtualMachineScaleSetVMsClient.List(ctx, group, name, "", "", string(compute.InstanceView))
 	if err != nil {
 		return nil, err

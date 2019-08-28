@@ -12,4 +12,3 @@ spec:
   type: LoadBalancer
   selector:
     run: chaoscoordinatorservice
-
