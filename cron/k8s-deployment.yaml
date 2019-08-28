@@ -16,7 +16,6 @@ spec:
         - name: chaoscoordinatorservice
           image: utheman/utheman_chaoscoordinatorservice:latest
           command: [./bin/chaoscoordinatorservice]
-          args: ["--kubeconfig", "./genesys-config-k8s-genesys"]
           ports:
           - containerPort: 3000
 
