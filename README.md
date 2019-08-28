@@ -167,5 +167,5 @@ Follow vm command as an [example](https://github.com/UtheMan/chaoscoordinator/tr
 Every command in the CLI calls it's implementation as seen [here](https://github.com/UtheMan/chaoscoordinator/blob/7322e51ade8bc5f2e96b9550160d829dd956d2b8/cmd/vm/kill/kill_vm.go#L20).
 These implementations are located in the [pkg/cmd/azure](https://github.com/UtheMan/chaoscoordinator/tree/master/pkg/cmd/azure) package.    
 This code is later executed by the kubernetes cron jobs deployed on the cluster. 
-#License
+# License
 This project is licensed under the [MIT License](https://github.com/UtheMan/chaoscoordinator/blob/master/LICENSE).
