@@ -4,7 +4,7 @@ Chaos Coordinator is a set of tools that allow for chaos testing of the infrastr
 Kubernetes cron jobs are used to ensure periodic testing that follows user-defined schedule.
  
 # Motivation
-Chaos Coordinator aims to make chaos testing of kubernetes clusters infrastructure as streamlined as possible.   
+Chaos Coordinator aims to make chaos testing of kubernetes clusters infrastructure as streamlined as possible.
 Chaos tests are triggered by Kubernetes cron jobs, which frees the user from the need of keeping track of the current state of tests and schedules.
 This makes it possible for the user to focus solely on the type of chaos user might want to implement.
 
@@ -18,9 +18,7 @@ For more information on chaos testing please refer to the [Principles of Chaos E
 * [client-go](https://github.com/kubernetes/client-go)
 * [Skaffold](https://github.com/GoogleContainerTools/skaffold)
 * Chaos CLI - [cobra](https://github.com/spf13/cobra)
- 
 # Features
- 
 * Creates stateless chaos testing scenarios using REST API calls.
 * Schedules of created scenarios are managed by Kubernetes cron jobs.
 * Allows for extension - implement new types of chaos using Go, as needed for your specific use case.
@@ -34,7 +32,7 @@ Chaos Coordinator is made of 2 parts:
 * [Chaos CLI](https://github.com/UtheMan/chaoscoordinator/tree/master/cmd)
 * [Chaos Coordinator API](https://github.com/UtheMan/chaoscoordinator/tree/master/cron)
 ### Chaos Coordinator CLI
-Chaos Coordinator CLI implements the CLI which is used by cron jobs to trigger chaos. Available commands can be seen [here](https://github.com/UtheMan/chaoscoordinator/blob/master/cmd/chaos.go).  
+Chaos Coordinator CLI implements the CLI which is used by cron jobs to trigger chaos. Available commands can be seen [here](https://github.com/UtheMan/chaoscoordinator/blob/master/cmd/chaos.go).
 All the details regarding specific commands can be found in the [/cmd](https://github.com/UtheMan/chaoscoordinator/tree/master/cmd) package.
  
 Example commands:
@@ -48,8 +46,8 @@ Example commands:
 ```
 ### Chaos Coordinator API
 The API is an entry point of Chaos Coordinator, allows the user to create, delete and get details of cron jobs responsible for chaos testing.   
-API is available under ```API_SERVICE_ADDRESS/api```    
- 
+API is available under ```API_SERVICE_ADDRESS/api```
+
 Example requests:
 * POST - create a cron job called test which reboots a VM in VMSS every minute
 ```
@@ -105,7 +103,8 @@ Create with ```kubectl apply -f filename.yaml```
 ```
 Create with ```kubectl create secret generic azure-auth --fromfile=creds=filename```
 ## Build
-Docker Images are built and deployed with Skaffold. For more information please refer to [Skaffold documentation](https://skaffold.dev/docs/getting-started/#installing-skaffold).  
+Docker Images are built and deployed with Skaffold. For more information please refer to [Skaffold documentation](https://skaffold.dev/docs/getting-started/#installing-skaffold).
+
 Both API and CLI can be built and launched locally. Use ```make``` command in respective directories to trigger appropriate builds.   
  
 ## Deploy
@@ -159,12 +158,14 @@ Chaos Coordinator CLI can be extended with additional commands as needed, 
 Cobra allows for easy extension - see [here](https://github.com/spf13/cobra) for more information regarding Cobra.  
 For an example of a command used in Chaos Coordinator see [here](https://github.com/UtheMan/chaoscoordinator/tree/master/cmd/vm).
 ### Adding new commands
-All the commands for Chaos Coordinator CLI reside in the /cmd package.  
+All the commands for Chaos Coordinator CLI reside in the /cmd package.
+
 To register new commands with the CLI one has to add a subcommand to the [root command](https://github.com/UtheMan/chaoscoordinator/blob/master/cmd/chaos.go).
 Follow vm command as an [example](https://github.com/UtheMan/chaoscoordinator/tree/master/cmd/vm) while structuring your commands.
 ### Command implementation
 Every command in the CLI calls it's implementation as seen [here](https://github.com/UtheMan/chaoscoordinator/blob/7322e51ade8bc5f2e96b9550160d829dd956d2b8/cmd/vm/kill/kill_vm.go#L20).
-These implementations are located in the [pkg/cmd/azure](https://github.com/UtheMan/chaoscoordinator/tree/master/pkg/cmd/azure) package.    
+These implementations are located in the [pkg/cmd/azure](https://github.com/UtheMan/chaoscoordinator/tree/master/pkg/cmd/azure) package.
+
 This code is later executed by the Kubernetes cron jobs deployed on the cluster. 
 # License
 This project is licensed under the [MIT License](https://github.com/UtheMan/chaoscoordinator/blob/master/LICENSE).
