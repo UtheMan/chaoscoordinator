@@ -1,5 +1,4 @@
 # Chaos Coordinator
- 
 Chaos Coordinator is a set of tools that allow for chaos testing of the infrastructure used by Kubernetes clusters on Azure.  
 Kubernetes cron jobs are used to ensure periodic testing that follows user-defined schedule.
  
