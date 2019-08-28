@@ -3,37 +3,41 @@ package cpu
 import (
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/compute/mgmt/compute"
 	"github.com/utheman/chaoscoordinator/pkg/cmd/azure/hardware/cmdutil"
-	"github.com/utheman/chaoscoordinator/pkg/cmd/azure/vm"
 	"strconv"
 )
 
-func BeginStress(subID string, flags cmdutil.Flags) error {
-	client, err := vm.NewVMsClient(subID)
+func BeginStress(subID string, flags Flags) error {
+	scriptContent, err := cmdutil.LoadScript("scripts/stressCpu.sh")
 	if err != nil {
 		return err
 	}
-	flags = setDefaultValues(flags)
-	vms, cmdRequest, err := cmdutil.PrepareRequest("scripts/stressCpu.sh", flags, client)
-	if err != nil {
-		return err
-	}
-	cmdRequest = setUpParams(cmdRequest)
-	for i := range vms {
-		println("Stressing cpu on machine", *vms[i].Name)
-		err := cmdutil.ExecutePreparedCmd(client, flags, *vms[i].InstanceID, cmdRequest)
-		if err != nil {
-			return err
-		}
-	}
-	return err
+	r := NewCmdRequest(flags, subID, scriptContent)
+	r = addValuesToRequest(r)
+	return beginCpuOperation(r)
 }
 
-func setUpParams(request *cmdutil.CmdRequest) *cmdutil.CmdRequest {
+func addValuesToRequest(r CmdRequest) CmdRequest {
+	r.Flags = setDefaultValues(r.Flags)
+	r = setUpParams(r)
+	return r
+}
+
+func setDefaultValues(flags Flags) Flags {
+	if flags.Timeout == 0 {
+		flags.Timeout = 45
+	}
+	if flags.Duration == 0 {
+		flags.Duration = 60
+	}
+	return flags
+}
+
+func setUpParams(request CmdRequest) CmdRequest {
 	cmd := make([]string, 0)
 	cmd = append(cmd, string(request.ScriptContent))
 	durationParam := "duration"
 	cmdParams := make([]compute.RunCommandInputParameter, 0)
-	durationValue := strconv.Itoa(int(request.Duration))
+	durationValue := strconv.Itoa(request.Duration)
 	cmdParams = append(cmdParams, compute.RunCommandInputParameter{
 		Name:  &durationParam,
 		Value: &durationValue,
@@ -41,14 +45,4 @@ func setUpParams(request *cmdutil.CmdRequest) *cmdutil.CmdRequest {
 	request.Cmd = cmd
 	request.CmdParams = cmdParams
 	return request
-}
-
-func setDefaultValues(flags cmdutil.Flags) cmdutil.Flags {
-	if flags.TimeOut == 0 {
-		flags.TimeOut = 45
-	}
-	if flags.Duration == 0 {
-		flags.Duration = 60
-	}
-	return flags
 }

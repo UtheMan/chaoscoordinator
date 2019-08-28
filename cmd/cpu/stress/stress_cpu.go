@@ -3,13 +3,12 @@ package stress
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/utheman/chaoscoordinator/pkg/cmd/azure/hardware/cmdutil"
 	"github.com/utheman/chaoscoordinator/pkg/cmd/azure/hardware/cpu"
 	"os"
 )
 
 func NewCommand() *cobra.Command {
-	cmdFlags := &cmdutil.Flags{}
+	cmdFlags := &cpu.Flags{}
 
 	cmd := &cobra.Command{
 		Args:  cobra.NoArgs,
@@ -21,9 +20,9 @@ func NewCommand() *cobra.Command {
 		},
 	}
 	cmd.PersistentFlags().StringVarP(&cmdFlags.ResourceGroup, "resource group", "r", "", "Resource group name")
-	cmd.PersistentFlags().StringVarP(&cmdFlags.ScaleSetName, "scale set", "s", "", "Scale set name")
+	cmd.PersistentFlags().StringVarP(&cmdFlags.ScaleSet, "scale set", "s", "", "Scale set name")
 	cmd.PersistentFlags().IntVarP(&cmdFlags.Duration, "duration", "d", 0, "Stress test duration")
-	cmd.PersistentFlags().IntVarP(&cmdFlags.TimeOut, "timeout", "t", 0, "Stress test operation timeout")
+	cmd.PersistentFlags().IntVarP(&cmdFlags.Timeout, "timeout", "t", 0, "Stress test operation timeout")
 
 	return cmd
 }

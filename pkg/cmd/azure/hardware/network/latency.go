@@ -3,38 +3,42 @@ package network
 import (
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/compute/mgmt/compute"
 	"github.com/utheman/chaoscoordinator/pkg/cmd/azure/hardware/cmdutil"
-	"github.com/utheman/chaoscoordinator/pkg/cmd/azure/vm"
 	"strconv"
 )
 
-func BeginLatencyIncrease(subID string, flags cmdutil.Flags) error {
-	client, err := vm.NewVMsClient(subID)
+func BeginLatencyIncrease(subID string, flags Flags) error {
+	scriptContent, err := cmdutil.LoadScript("scripts/latency.sh")
 	if err != nil {
 		return err
 	}
-	flags = setDefaultValues(flags)
-	vms, cmdRequest, err := cmdutil.PrepareRequest("scripts/latency.sh", flags, client)
-	if err != nil {
-		return err
-	}
-	cmdRequest = setUpParams(cmdRequest)
-	for i := range vms {
-		println("Increasing latency on machine", *vms[i].Name)
-		err := cmdutil.ExecutePreparedCmd(client, flags, *vms[i].InstanceID, cmdRequest)
-		if err != nil {
-			return err
-		}
-	}
-	return err
+	r := NewCmdRequest(flags, subID, scriptContent)
+	r = addValuesToRequest(r)
+	return beginNetworkOperation(r)
 }
 
-func setUpParams(request *cmdutil.CmdRequest) *cmdutil.CmdRequest {
+func addValuesToRequest(r CmdRequest) CmdRequest {
+	r.Flags = setDefaultValues(r.Flags)
+	r = setUpParams(r)
+	return r
+}
+
+func setDefaultValues(flags Flags) Flags {
+	if flags.Duration == 0 {
+		flags.Duration = 60
+	}
+	if flags.Latency == 0 {
+		flags.Latency = 200
+	}
+	return flags
+}
+
+func setUpParams(request CmdRequest) CmdRequest {
 	cmd := make([]string, 0)
 	cmd = append(cmd, string(request.ScriptContent))
 	durationParam := "duration"
 	latencyParam := "latencyIncrease"
 	cmdParams := make([]compute.RunCommandInputParameter, 0)
-	durationValue := strconv.Itoa(int(request.Duration))
+	durationValue := strconv.Itoa(request.Duration)
 	latencyValue := strconv.Itoa(request.Latency)
 	cmdParams = append(cmdParams, compute.RunCommandInputParameter{
 		Name:  &durationParam,
@@ -47,14 +51,4 @@ func setUpParams(request *cmdutil.CmdRequest) *cmdutil.CmdRequest {
 	request.Cmd = cmd
 	request.CmdParams = cmdParams
 	return request
-}
-
-func setDefaultValues(flags cmdutil.Flags) cmdutil.Flags {
-	if flags.Duration == 0 {
-		flags.Duration = 60
-	}
-	if flags.Latency == 0 {
-		flags.Latency = 200
-	}
-	return flags
 }

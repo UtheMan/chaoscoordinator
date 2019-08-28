@@ -3,37 +3,31 @@ package disk
 import (
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/compute/mgmt/compute"
 	"github.com/utheman/chaoscoordinator/pkg/cmd/azure/hardware/cmdutil"
-	"github.com/utheman/chaoscoordinator/pkg/cmd/azure/vm"
 	"strconv"
 )
 
-func BeginFill(subID string, flags cmdutil.Flags) error {
-	client, err := vm.NewVMsClient(subID)
+func BeginFill(subID string, flags Flags) error {
+	scriptContent, err := cmdutil.LoadScript("scripts/fillDisk.sh")
 	if err != nil {
 		return err
 	}
-	flags = setDefaultValues(flags)
-	vms, cmdRequest, err := cmdutil.PrepareRequest("scripts/fillDisk.sh", flags, client)
-	if err != nil {
-		return err
-	}
-	cmdRequest = setUpParams(cmdRequest)
-	for i := range vms {
-		println("Executing fill on machine", *vms[i].Name)
-		err := cmdutil.ExecutePreparedCmd(client, flags, *vms[i].InstanceID, cmdRequest)
-		if err != nil {
-			return err
-		}
-	}
-	return err
+	r := NewCmdRequest(flags, subID, scriptContent)
+	r = addValuesToRequest(r)
+	return beginDiskOperation(r)
 }
 
-func setDefaultValues(flags cmdutil.Flags) cmdutil.Flags {
+func addValuesToRequest(r CmdRequest) CmdRequest {
+	r.Flags = setDefaultValues(r.Flags)
+	r = setUpParams(r)
+	return r
+}
+
+func setDefaultValues(flags Flags) Flags {
 	if flags.Amount == "" {
 		flags.Amount = "1000"
 	}
-	if flags.TimeOut == 0 {
-		flags.TimeOut = 45
+	if flags.Timeout == 0 {
+		flags.Timeout = 45
 	}
 	if flags.Duration == 0 {
 		flags.Duration = 60
@@ -41,7 +35,7 @@ func setDefaultValues(flags cmdutil.Flags) cmdutil.Flags {
 	return flags
 }
 
-func setUpParams(request *cmdutil.CmdRequest) *cmdutil.CmdRequest {
+func setUpParams(request CmdRequest) CmdRequest {
 	cmd := make([]string, 0)
 	cmd = append(cmd, string(request.ScriptContent))
 	durationParam := "duration"
