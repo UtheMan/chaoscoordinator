@@ -41,7 +41,7 @@ func setUpParams(request CmdRequest) CmdRequest {
 	durationParam := "duration"
 	amountParam := "amount"
 	cmdParams := make([]compute.RunCommandInputParameter, 0)
-	durationValue := strconv.Itoa(int(request.Duration))
+	durationValue := strconv.Itoa(request.Duration)
 	cmdParams = append(cmdParams, compute.RunCommandInputParameter{
 		Name:  &durationParam,
 		Value: &durationValue,
