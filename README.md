@@ -145,7 +145,7 @@ spec:
     spec:
       containers:
         - name: chaoscoordinatorservice
-          image: utheman/utheman_chaoscoordinatorservice:ab674ff-dirty
+          image: utheman/utheman_chaoscoordinatorservice:latest
           command: [./bin/chaoscoordinatorservice]
           ports:
           - containerPort: 3000
