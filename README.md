@@ -152,7 +152,49 @@ spec:
 ```
 Add to cluster with ```kubectl apply -f DEPLOYMENT_FILE_NAME.YAML```
 ## Creating Chaos
-TODO
+Chaos scenarios are executed by kubernetes cron jobs created by Chaos Coordinator. 
+
+![alt text](https://github.com/UtheMan/chaoscoordinator/blob/master/docs/ChaosCoordinatorSimpleFlow.png "basic flow")
+
+POST call to Chaos Coordinator api creates a cron job on the cluster. The cron job will then follow provided schedule and create pods executing chaos scenario.
+
+Chaos can also be triggered locally, without API calls.. Simply execute the Chaos Coordinator binary with appropriate arguments:
+
+```./bin/chaos vm kill -m random -s controlplane -r myresourcegroup``` - this command will trigger a one-time reboot of random vm in the control plane scale set. Note, that no cron jobs are created 
+if you trigger chaos that way. 
+## Executing custom scripts on Azure vm's
+Custom scripts can be executed by chaos coordinator with ```script run``` [command](https://github.com/UtheMan/chaoscoordinator/blob/script/cmd/script/run/run_script.go). 
+
+### REQUIREMENTS 
+* The script you want to run has to be present in your version of chaoscoordinator image (if you intend to run it from cluster)
+* Cluster with Linux vms on Azure
+
+### Executing scripts
+For a script to be correctly executed following flags have to be provided in the command
+* Duration (d) - script execution time.
+* Time out (t) - additional time you are willing to wait for the finish of asynchronous operation.
+* Resource group name (r) - name of the resource group holding vms you want to target.
+* Scale set name (s) - name of the scale set holding vms you want to target.
+* Path (p) - path to the script you want to execute
+
+Additionally, ```script run``` command takes in any number of arguments used to fill in values of parameters possibly used in your bash script.
+These arguments have to be entered in space separated pairs - see example below.
+
+```
+scripts/hello.sh:
+    echo $message
+------------------------
+command:
+    script run -d 40 -t 60 -p scripts/hello.sh -r chaoscoordinatorresourcegroup -s controlplane message hello
+------------------------
+result:
+    hello
+```
+
+Chaos Coordinator will create a cron job on your cluster with specified schedule, triggering the provided script.
+
+**Note - Azure vm's only allow for execution of one script at a time!**
+
 ## New commands for the CLI
 Chaos Coordinator CLI can be extended with additional commands as needed, 
 Cobra allows for easy extension - see [here](https://github.com/spf13/cobra) for more information regarding Cobra.  
