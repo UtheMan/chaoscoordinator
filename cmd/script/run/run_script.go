@@ -1,6 +1,7 @@
 package run
 
 import (
+	"errors"
 	"github.com/spf13/cobra"
 	"github.com/utheman/chaoscoordinator/pkg/cmd/azure/script"
 	"os"
@@ -9,7 +10,12 @@ import (
 func NewCommand() *cobra.Command {
 	cmdFlags := &script.Flags{}
 	cmd := &cobra.Command{
-		Args:  cobra.ArbitraryArgs,
+		Args: func(cmd *cobra.Command, args []string) error {
+			if len(args)%2 != 0 {
+				return errors.New("every argument needs a name and value")
+			}
+			return nil
+		},
 		Use:   "run",
 		Short: "Execute script on VM",
 		Long:  "Execute script on VM on Azure",
