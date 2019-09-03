@@ -34,7 +34,7 @@ Chaos Coordinator is made of 2 parts:
 ### Chaos Coordinator CLI
 Chaos Coordinator CLI implements the CLI which is used by cron jobs to trigger chaos. Available commands can be seen [here](https://github.com/UtheMan/chaoscoordinator/blob/master/cmd/chaos.go).
 All the details regarding specific commands can be found in the [/cmd](https://github.com/UtheMan/chaoscoordinator/tree/master/cmd) package.
- 
+
 Example commands:
 * Create a cron job that reboots a random VM in a scale set in a given resource group
 ```
