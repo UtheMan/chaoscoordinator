@@ -101,7 +101,7 @@ Create with ```kubectl apply -f filename.yaml```
   "managementEndpointUrl": "https://management.core.windows.net/"
 }
 ```
-Create with ```kubectl create secret generic azure-auth -- fromfile=creds=filename```
+Create with ```kubectl create secret generic azure-auth --from-file=creds=filename```
 ## Build
 Docker Images are built and deployed with Skaffold. For more information please refer to [Skaffold documentation](https://skaffold.dev/docs/getting-started/#installing-skaffold).
 
