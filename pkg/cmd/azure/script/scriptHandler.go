@@ -63,7 +63,7 @@ func handleCmdResult(cmdErrors chan error, results chan compute.RunCommandResult
 	case res := <-results:
 		println(*(*res.Value)[0].Message)
 		return nil
-	case <-time.After((time.Duration(flags.Duration) + time.Duration(flags.Timeout)) * time.Second):
+	case <-time.After(2 * (time.Duration(flags.Duration) + time.Duration(flags.Timeout)) * time.Second):
 		err := errors.New("operation timed out")
 		return err
 	}
