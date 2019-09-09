@@ -3,6 +3,8 @@ package vm
 import (
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/compute/mgmt/compute"
 	"github.com/utheman/chaoscoordinator/pkg/cmd/azure"
+	"math/rand"
+	"time"
 )
 
 const userAgent string = "genesys"
@@ -30,4 +32,15 @@ func newScaleSetVMsClient(subID string) (compute.VirtualMachineScaleSetVMsClient
 		return compute.VirtualMachineScaleSetVMsClient{}, err
 	}
 	return client, nil
+}
+
+func PickRandom(vms []compute.VirtualMachineScaleSetVM, amount int) []compute.VirtualMachineScaleSetVM {
+	r := rand.New(rand.NewSource(time.Now().Unix()))
+	result := make([]compute.VirtualMachineScaleSetVM, amount)
+	perm := r.Perm(len(vms))
+	for i := 0; i < amount; i++ {
+		randIndex := perm[i]
+		result[i] = vms[randIndex]
+	}
+	return result
 }

@@ -25,6 +25,7 @@ func NewCommand() *cobra.Command {
 	}
 	cmd.PersistentFlags().IntVarP(&cmdFlags.Timeout, "time out", "t", 0, "Time out - additional time given for scripts to execute before operation times out")
 	cmd.PersistentFlags().IntVarP(&cmdFlags.Duration, "duration", "d", 0, "Duration - time for script execution")
+	cmd.PersistentFlags().IntVarP(&cmdFlags.Multiple, "multiple", "m", 1, "Run script on multiple vms in parallel")
 	cmd.PersistentFlags().StringVarP(&cmdFlags.ResourceGroup, "resource group", "r", "", "Resource group name")
 	cmd.PersistentFlags().StringVarP(&cmdFlags.Path, "path", "p", "", "Path to script")
 	cmd.PersistentFlags().StringVarP(&cmdFlags.ScaleSet, "scale set", "s", "", "Scale set name")

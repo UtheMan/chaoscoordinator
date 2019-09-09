@@ -22,6 +22,7 @@ func NewCommand() *cobra.Command {
 	}
 	cmd.PersistentFlags().StringVarP(&cmdFlags.Scope, "scope", "s", "", "Scope for the command")
 	cmd.PersistentFlags().StringVarP(&cmdFlags.Mode, "mode", "m", "", "Chaos mode")
+	cmd.PersistentFlags().IntVarP(&cmdFlags.Amount, "amount", "a", 0, "Amount of vms to reboot")
 	cmd.PersistentFlags().StringVarP(&cmdFlags.ResourceName, "name", "n", "", "resource name")
 	cmd.PersistentFlags().StringVarP(&cmdFlags.ResourceGroup, "resource group", "r", "", "resource group name")
 

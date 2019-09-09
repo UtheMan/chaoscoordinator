@@ -20,6 +20,7 @@ type GeneralRequest struct {
 type Flags struct {
 	Timeout       int
 	Duration      int
+	Multiple      int
 	Kind          string
 	Filter        string
 	ResourceGroup string

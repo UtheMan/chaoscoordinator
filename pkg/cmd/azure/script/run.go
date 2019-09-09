@@ -31,12 +31,16 @@ func (r CmdRequest) HandleRequest() error {
 	if err != nil {
 		return err
 	}
-	for i := range vms {
-		println("Executing script:", r.Flags.Kind, "on machine", *vms[i].Name)
-		err = r.BeginCmdExec(client, *vms[i].InstanceID)
-		if err != nil {
-			return err
+	if r.Flags.Multiple <= 1 {
+		for i := range vms {
+			println("Executing script:", r.Flags.Kind, "on machine", *vms[i].Name)
+			err = r.BeginCmdExec(client, *vms[i].InstanceID)
+			if err != nil {
+				return err
+			}
 		}
+	} else {
+		runOnMultiple(r, client, vms)
 	}
 	return err
 }
@@ -54,6 +58,22 @@ func (r CmdRequest) BeginCmdExec(client *vm.VmssClient, instanceId string) error
 	results := make(chan compute.RunCommandResult)
 	go r.ExecCmd(cmdErrors, results, client, instanceId)
 	return handleCmdResult(cmdErrors, results, r.Flags)
+}
+
+func runOnMultiple(request CmdRequest, client *vm.VmssClient, vms []compute.VirtualMachineScaleSetVM) error {
+	selectedVms := vm.PickRandom(vms, request.Multiple)
+	errs := make(chan error)
+	for i := 0; i < request.Multiple; i++ {
+		go func(i int) {
+			println("Executing script on machine ", *selectedVms[i].InstanceID)
+			err := request.BeginCmdExec(client, *selectedVms[i].InstanceID)
+			errs <- err
+		}(i)
+	}
+	select {
+	case err := <-errs:
+		return err
+	}
 }
 
 func (r CmdRequest) ExecCmd(cmdErrors chan error, results chan compute.RunCommandResult, client *vm.VmssClient, vmId string) (chan error, chan compute.RunCommandResult) {
