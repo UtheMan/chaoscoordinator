@@ -21,7 +21,6 @@ func addValuesToRequest(r CmdRequest) CmdRequest {
 	r = setUpParams(r)
 	return r
 }
-
 func setDefaultValues(flags Flags) Flags {
 	if flags.Duration == 0 {
 		flags.Duration = 60

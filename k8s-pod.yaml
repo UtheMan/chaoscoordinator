@@ -23,7 +23,7 @@ spec:
   - name: chaoscoordinator
     image: utheman/utheman_chaoscoordinator:468c33c-dirty
     command: ["./chaos"]
-    args: [ "vm", "kill", "-m", "random", "-r",  "chaoscoordinatorresourcegroup", "-n", "controlplane"]
+#    args: [ "vm", "kill", "-m", "random", "-r",  "chaoscoordinatorresourcegroup", "-n", "controlplane"]
     volumeMounts:
     - name: azure-auth-volume
       readOnly: true

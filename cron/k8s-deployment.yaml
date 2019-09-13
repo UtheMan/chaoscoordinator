@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: chaoscoordinatorservice
+  name: chaoscoordinator
 spec:
   selector:
     matchLabels:
@@ -13,7 +13,7 @@ spec:
         run: chaoscoordinatorservice
     spec:
       containers:
-        - name: chaoscoordinatorservice
+        - name: chaoscoordinator
           image: utheman/utheman_chaoscoordinatorservice:latest
           command: [./bin/chaoscoordinatorservice]
           ports:

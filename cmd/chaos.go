@@ -4,6 +4,7 @@ import (
 	"github.com/utheman/chaoscoordinator/cmd/cpu"
 	"github.com/utheman/chaoscoordinator/cmd/disk"
 	"github.com/utheman/chaoscoordinator/cmd/network"
+	"github.com/utheman/chaoscoordinator/cmd/script"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -24,6 +25,7 @@ func NewCommand() *cobra.Command {
 	rootCmd.AddCommand(cpu.NewCommand())
 	rootCmd.AddCommand(disk.NewCommand())
 	rootCmd.AddCommand(network.NewCommand())
+	rootCmd.AddCommand(script.NewCommand())
 	return rootCmd
 }
 

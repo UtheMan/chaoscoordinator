@@ -10,6 +10,7 @@ import (
 
 // Flags exposes the vm reboot command arguments/flags
 type Flags struct {
+	Amount        int
 	Mode          string
 	Scope         string
 	ResourceGroup string
@@ -25,8 +26,18 @@ func Kill(subID string, flags Flags) error {
 	if err != nil {
 		return err
 	}
-	instanceToReboot := selectInstanceToReboot(vmsList, flags)
-	_, err = c.Restart(context.TODO(), flags.ResourceGroup, flags.ResourceName, instanceToReboot)
+	if flags.Amount <= 1 {
+		instanceToReboot := selectInstanceToReboot(vmsList, flags)
+		_, err = c.Restart(context.TODO(), flags.ResourceGroup, flags.ResourceName, instanceToReboot)
+	} else {
+		selectedVms := PickRandom(vmsList, flags.Amount)
+		for i := range selectedVms {
+			_, err = c.Restart(context.TODO(), flags.ResourceGroup, flags.ResourceName, *selectedVms[i].InstanceID)
+			if err != nil {
+				return err
+			}
+		}
+	}
 	return err
 }
 
