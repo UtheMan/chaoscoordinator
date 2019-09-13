@@ -35,6 +35,9 @@ func newScaleSetVMsClient(subID string) (compute.VirtualMachineScaleSetVMsClient
 }
 
 func PickRandom(vms []compute.VirtualMachineScaleSetVM, amount int) []compute.VirtualMachineScaleSetVM {
+	if amount > len(vms) {
+		amount = len(vms)
+	}
 	r := rand.New(rand.NewSource(time.Now().Unix()))
 	result := make([]compute.VirtualMachineScaleSetVM, amount)
 	perm := r.Perm(len(vms))
